@@ -1,0 +1,5 @@
+<main>
+    <div class="row" *ngFor="let row of board.fields">
+        <app-square *ngFor="let field of row" [field]="field"></app-square>
+    </div>
+</main>

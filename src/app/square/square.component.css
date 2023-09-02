@@ -1,0 +1,21 @@
+.icon-button {
+  width: 50px; /* Ustaw dowolną stałą szerokość */
+  height: 50px; /* Ustaw dowolną stałą wysokość */
+}
+
+.icon-image {
+  max-width: 100%; /* Maksymalna szerokość obrazu wewnątrz przycisku */
+  max-height: 100%; /* Maksymalna wysokość obrazu wewnątrz przycisku */
+}
+
+.icon-button.clicked {
+  border: 2px solid blue; /* Ustaw kolorową ramkę dla klikniętego przycisku */
+}
+
+.icon-button.clicked-to-move {
+  border: 2px solid yellow; /* Ustaw kolorową ramkę dla klikniętego przycisku */
+}
+
+.icon-button.clicked-to-capture {
+  border: 2px solid red; /* Ustaw kolorową ramkę dla klikniętego przycisku */
+}

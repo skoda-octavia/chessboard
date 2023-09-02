@@ -1,0 +1,8 @@
+<button (click)="onSquareClick()"
+    class="icon-button"
+    [ngStyle]="{ 'background-color': field.color }"
+    [ngClass]="{ 'clicked': field.markedToMove }"
+    [ngClass]="{ 'clicked-to-move': field.markedPossibleMove }"
+    [ngClass]="{ 'clicked-to-capture': field.markedToCapture }">
+    <img [src]="field && field.piece ? field.piece.iconPath : ''" class="icon-image" />
+</button>
