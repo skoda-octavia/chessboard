@@ -31,14 +31,15 @@ export abstract class King extends Piece implements CastlingPiece {
                 }
             }
         }
+        var possibleCastlingMoves = this.board.possibleCastlingMoves(this.color)
 
-        return possibleMoves;
+        return [...possibleMoves, ...possibleCastlingMoves];
     }
 
     override moveTo(height: number, width: number): void {
         this.fieldHeight = height;
         this.fieldWidth = width;
-        
+
         if (!this.alreadyMoved) {
             this.alreadyMoved = true;
         }

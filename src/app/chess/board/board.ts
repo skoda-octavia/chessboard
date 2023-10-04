@@ -11,17 +11,19 @@ import { WhiteKing } from "../pieces/piece/king/whiteKing/white-king";
 
 import { BlackKnight } from "../pieces/piece/knight/blackKnight/black-knight";
 import { WhiteKnight } from "../pieces/piece/knight/whiteKnight/white-knight";
+import { CastlingOperator } from "./castling-operator";
 
 
 
 export class Board {
+    castlingOperator: CastlingOperator;
     fields: Field[][] = [];
     width: number = 0;
     height: number = 0;
     anyButtonClicked: boolean = false;
     markedField: any = null;
     colorMap: any = null;
-    
+
 
 
     buttonClicked(height: number, width: number) : void {
@@ -34,9 +36,9 @@ export class Board {
         }
     }
 
-    markPossibleMoves(possibleMoves: number[][], pieceColor : PieceColor) { 
+    markPossibleMoves(possibleMoves: number[][], pieceColor : PieceColor) {
         for (let i = 0; i < possibleMoves.length; i++) {
-            
+
             var y = possibleMoves[i][0];
             var x = possibleMoves[i][1];
             var field = this.fields[y][x];
@@ -46,44 +48,6 @@ export class Board {
             else if  (field.piece.color != pieceColor) { field.markedToCapture = true;}
             else { }
         }
-    }
-
-    canQueenSideCastle(pieceColor: PieceColor): boolean {
-        if (pieceColor == PieceColor.White) { return this.canWhiteQueenCastle() }
-        else if (pieceColor == PieceColor.Black) { return this.canBlackQueenCastle() }
-        else {
-            console.error("given color is none");
-        }
-        return true;
-    }
-    canBlackQueenCastle() {
-        return true;
-    }
-
-    canWhiteQueenCastle(): boolean {
-        
-        // king and rook on places
-        if (
-            !(this.fields[7][0].piece instanceof WhiteRook) ||
-            !(this.fields[7][4].piece instanceof WhiteKing)
-        ) { return false;}
-        
-        // king and rook moved
-        if (
-            this.fields[7][0].piece.alreadyMoved ||
-            this.fields[7][4].piece.alreadyMoved
-        ) { return false;}
-
-        // fields occupied
-        if (
-            this.fields[7][1].piece ||
-            this.fields[7][2].piece ||
-            this.fields[7][3].piece
-        ) { return false; }
-        
-        
-
-        return true;
     }
 
     firstButtonClicked(height: number, width: number) : void {
@@ -114,13 +78,26 @@ export class Board {
         }
     }
 
+    possibleCastlingMoves(color: PieceColor) : number[][] {
+        switch(color) {
+            case PieceColor.White:
+                return this.castlingOperator.possibleWhiteCastlings();
+
+            case PieceColor.Black:
+                return this.castlingOperator.possibleBlackCastlings();
+            default:
+                console.error("invalid color in possibleCastlingMoves")
+            }
+        return [[]];
+    }
+
     move(height: number, width: number) {
         this.colorMap
         [this.markedField.piece.fieldHeight]
         [this.markedField.piece.fieldWidth] =
             PieceColor.None;
-        this.colorMap[height][width] = this.markedField.piece.color; 
-        
+        this.colorMap[height][width] = this.markedField.piece.color;
+
         this.markedField.piece.moveTo(height, width);
 
         this.fields[height][width].piece = this.markedField.piece;
@@ -132,7 +109,7 @@ export class Board {
         this.fields[height][width].piece = null;
         this.move(height, width);
         console.log('color  map: ', this.colorMap);
-        
+
     }
 
     checkFieldArgs(height: number, width: number) : void {
@@ -183,7 +160,7 @@ export class Board {
         // for (let i = 0; i < this.width; i++) { this.fields[1][i].setPiece(new BlackPawn()); }
 
         // for (let i = 0; i < this.width; i++) { this.fields[6][i].setPiece(new WhitePawn()); }
-        
+
         this.fields[7][0].setPiece(new WhiteRook(7, 0));
         this.fields[7][1].setPiece(new WhiteKnight(7, 1));
         this.fields[7][2].setPiece(new WhiteBishop(7, 2));
@@ -192,7 +169,7 @@ export class Board {
         this.fields[7][5].setPiece(new WhiteBishop(7, 5));
         this.fields[7][6].setPiece(new WhiteKnight(7, 6));
         this.fields[7][7].setPiece(new WhiteRook(7, 7));
-        
+
 
     }
 
@@ -218,5 +195,6 @@ export class Board {
         this.setBaseBoard();
         this.setBasePosition();
         this.colorMap = this.generateColorMap();
+        this.castlingOperator = new CastlingOperator(this.fields);
     }
 }
