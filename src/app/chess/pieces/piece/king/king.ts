@@ -1,10 +1,10 @@
 import { Board } from "src/app/chess/board/board";
+import { Field } from "src/app/chess/field/field";
 import { CastlingPiece } from "../../castlingPiece";
 import { Piece, PieceColor } from "../../piece";
 
 export abstract class King extends Piece implements CastlingPiece {
 
-    board: Board;
     alreadyMoved: boolean = false;
     directions: number[][] = [
             [0, 1],
@@ -15,7 +15,13 @@ export abstract class King extends Piece implements CastlingPiece {
             [1, -1],
             [-1, 1],
             [-1, -1]
-        ];
+    ];
+    
+    moveRook(fromY: number, fromX: number, toY: number, toX: number) {
+        var tempPiece = this.board.fields[fromY][fromX].piece
+        this.board.fields[fromY][fromX].piece = null
+        this.board.fields[toY][toX].piece = tempPiece
+    }
 
     possibleMoves(colorBoard: PieceColor[][]): number[][] {
         var possibleMoves = [];
@@ -31,22 +37,19 @@ export abstract class King extends Piece implements CastlingPiece {
                 }
             }
         }
-        var possibleCastlingMoves = this.board.possibleCastlingMoves(this.color)
-
-        return [...possibleMoves, ...possibleCastlingMoves];
-    }
-
-    override moveTo(height: number, width: number): void {
-        this.fieldHeight = height;
-        this.fieldWidth = width;
-
-        if (!this.alreadyMoved) {
-            this.alreadyMoved = true;
+        
+        if (this.board.markedField == this.board.fields[this.fieldHeight][this.fieldWidth]) {
+            var possibleCastlingMoves = this.board.possibleCastlingMoves(this.color)
+            return [...possibleMoves, ...possibleCastlingMoves];
+        }
+        else {
+            return possibleMoves
         }
     }
 
+
+
     constructor(fieldHeight: number, fieldWidth: number, board: Board) {
-        super(fieldHeight, fieldWidth)
-        this.board = board;
+        super(fieldHeight, fieldWidth, board)
     }
 }

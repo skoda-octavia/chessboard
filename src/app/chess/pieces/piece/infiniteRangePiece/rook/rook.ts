@@ -1,4 +1,6 @@
 import { withDebugTracing } from "@angular/router";
+import { Board } from "src/app/chess/board/board";
+import { Field } from "src/app/chess/field/field";
 import { CastlingPiece } from "../../../castlingPiece";
 import { Piece, PieceColor } from "../../../piece";
 import { InfiniteRangePiece } from "../infinite-range-piece";
@@ -27,7 +29,7 @@ export abstract class Rook extends InfiniteRangePiece implements CastlingPiece {
     }
 }
         
-    constructor(fieldHeight: number, fieldWidth: number) {
-        super(fieldHeight, fieldWidth);
+    constructor(fieldHeight: number, fieldWidth: number, board: Board) {
+        super(fieldHeight, fieldWidth, board);
     }
 }

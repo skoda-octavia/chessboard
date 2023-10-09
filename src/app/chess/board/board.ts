@@ -23,7 +23,20 @@ export class Board {
     anyButtonClicked: boolean = false;
     markedField: any = null;
     colorMap: any = null;
+    whiteInCheck: boolean = true;
+    blackInCheck: boolean = true;
+    whiteKing: any = null;
+    blackKing: any = null;
+    movingColor: PieceColor = PieceColor.White;
 
+
+    changeMovingColor(): void {
+        if (this.movingColor == PieceColor.White) { this.movingColor = PieceColor.Black }
+        else if (this.movingColor == PieceColor.Black) { this.movingColor = PieceColor.White }
+        else {
+            console.error("error while changing movingColor")
+        }
+    }
 
 
     buttonClicked(height: number, width: number) : void {
@@ -42,7 +55,7 @@ export class Board {
             var y = possibleMoves[i][0];
             var x = possibleMoves[i][1];
             var field = this.fields[y][x];
-            console.log('markPossible moves:', field);
+
             if (field.piece == null) { field.markedPossibleMove = true;}
             //if piece same color
             else if  (field.piece.color != pieceColor) { field.markedToCapture = true;}
@@ -52,10 +65,10 @@ export class Board {
 
     firstButtonClicked(height: number, width: number) : void {
         //mark
-        if (this.fields[height][width].piece) {
+        if (this.fields[height][width].piece && this.fields[height][width].piece.color == this.movingColor) {
             this.markedField = this.fields[height][width];
             var possibleMoves = this.markedField.piece.possibleMoves(this.colorMap);
-            //console.log('possibleFields,', possibleMoves);
+            
             this.markPossibleMoves(possibleMoves, this.markedField.piece.color)
             this.fields[height][width].markedToMove = true;
             this.anyButtonClicked = true;
@@ -78,8 +91,40 @@ export class Board {
         }
     }
 
+    fieldsControlled(byColor: PieceColor): Set<Field> {
+        var controlledFields = new Set<Field>()
+        var tempPiece;
+        for (let i = 0; i < this.fields.length; i++) {
+            for (let j = 0; j < this.fields[0].length; j++) {
+                if (this.fields[i][j].piece) {
+                    tempPiece = this.fields[i][j].piece;
+                    if (tempPiece.color == byColor) {
+                        var possibleMoves = tempPiece.possibleMoves(this.colorMap);
+                        for (const field of possibleMoves) {
+                            var fieldHeight = field[0]
+                            var fieldWidth = field[1]
+                            controlledFields.add(this.fields[fieldHeight][fieldWidth]);
+                        }
+                    }
+                }
+            }
+        }
+        return controlledFields
+    }
+
+    unmarkButtons(): void {
+        this.anyButtonClicked = false;
+        for (let i = 0; i < this.height; i++) {
+            for (let j = 0; j < this.width; j++) {
+                this.fields[i][j].unmark();
+            }
+        }
+    }
+
     possibleCastlingMoves(color: PieceColor) : number[][] {
-        switch(color) {
+        this.generateColorMap();
+        
+        switch (color) {
             case PieceColor.White:
                 return this.castlingOperator.possibleWhiteCastlings();
 
@@ -101,15 +146,49 @@ export class Board {
         this.markedField.piece.moveTo(height, width);
 
         this.fields[height][width].piece = this.markedField.piece;
-        console.log('new piece: ', this.fields[height][width].piece);
         this.markedField.piece = null;
+
+        this.changeMovingColor()
+        this.markCheck()
+
+        console.log("board", this)
+
     }
 
     capture(height: number, width: number) {
         this.fields[height][width].piece = null;
         this.move(height, width);
-        console.log('color  map: ', this.colorMap);
 
+        this.markCheck()
+
+    }
+
+    whiteUnderCheck(): boolean {
+        var fieldsControlledByBlack = this.fieldsControlled(PieceColor.Black)
+        var whiteKingHeight = this.whiteKing.fieldHeight
+        var whiteKingWidth = this.whiteKing.fieldWidth
+        var whiteKingField = this.fields[whiteKingHeight][whiteKingWidth]
+        if (fieldsControlledByBlack.has(whiteKingField)) { return true }
+        else { return false }
+    }
+
+    blackUnderCheck(): boolean {
+        var fieldsControlledByWhite = this.fieldsControlled(PieceColor.White)
+        var blackKingHeight = this.blackKing.fieldHeight
+        var blackKingWidth = this.blackKing.fieldWidth
+        var blackKingField = this.fields[blackKingHeight][blackKingWidth]
+        if (fieldsControlledByWhite.has(blackKingField)) { return true }
+        else { return false }
+        
+    }
+
+    markCheck() {
+        if (this.blackUnderCheck()) { this.blackInCheck = true }
+        else { this.blackInCheck = false }
+        
+
+        if (this.whiteUnderCheck()) { this.whiteInCheck = true }
+        else { this.whiteInCheck = false }
     }
 
     checkFieldArgs(height: number, width: number) : void {
@@ -139,36 +218,33 @@ export class Board {
         }
     }
 
-    unmarkButtons(): void {
-        this.anyButtonClicked = false;
-        for (let i = 0; i < this.height; i++) {
-            for (let j = 0; j < this.width; j++) {
-                this.fields[i][j].unmark();
-            }
-        }
-    }
+
 
     setBasePosition() {
-        this.fields[0][0].setPiece(new BlackRook(0, 0));
-        this.fields[0][1].setPiece(new BlackKnight(0, 1));
-        this.fields[0][2].setPiece(new BlackBishop(0, 2));
-        this.fields[0][3].setPiece(new BlackQueen(0, 3));
+        this.fields[0][0].setPiece(new BlackRook(0, 0, this));
+        this.fields[0][1].setPiece(new BlackKnight(0, 1, this));
+        this.fields[0][2].setPiece(new BlackBishop(0, 2, this));
+        this.fields[0][3].setPiece(new BlackQueen(0, 3, this));
         this.fields[0][4].setPiece(new BlackKing(0, 4, this));
-        this.fields[0][5].setPiece(new BlackBishop(0, 5));
-        this.fields[0][6].setPiece(new BlackKnight(0, 6));
-        this.fields[0][7].setPiece(new BlackRook(0, 7));
+        this.blackKing = this.fields[0][4].piece
+
+        this.fields[0][5].setPiece(new BlackBishop(0, 5, this));
+        this.fields[0][6].setPiece(new BlackKnight(0, 6, this));
+        this.fields[0][7].setPiece(new BlackRook(0, 7, this));
         // for (let i = 0; i < this.width; i++) { this.fields[1][i].setPiece(new BlackPawn()); }
 
         // for (let i = 0; i < this.width; i++) { this.fields[6][i].setPiece(new WhitePawn()); }
 
-        this.fields[7][0].setPiece(new WhiteRook(7, 0));
-        this.fields[7][1].setPiece(new WhiteKnight(7, 1));
-        this.fields[7][2].setPiece(new WhiteBishop(7, 2));
-        this.fields[7][3].setPiece(new WhiteQueen(7, 3));
+        this.fields[7][0].setPiece(new WhiteRook(7, 0, this));
+        this.fields[7][1].setPiece(new WhiteKnight(7, 1, this));
+        this.fields[7][2].setPiece(new WhiteBishop(7, 2, this));
+        this.fields[7][3].setPiece(new WhiteQueen(7, 3, this));
         this.fields[7][4].setPiece(new WhiteKing(7, 4, this));
-        this.fields[7][5].setPiece(new WhiteBishop(7, 5));
-        this.fields[7][6].setPiece(new WhiteKnight(7, 6));
-        this.fields[7][7].setPiece(new WhiteRook(7, 7));
+        this.whiteKing = this.fields[7][4].piece;
+
+        this.fields[7][5].setPiece(new WhiteBishop(7, 5, this));
+        this.fields[7][6].setPiece(new WhiteKnight(7, 6, this));
+        this.fields[7][7].setPiece(new WhiteRook(7, 7, this));
 
 
     }
@@ -195,6 +271,6 @@ export class Board {
         this.setBaseBoard();
         this.setBasePosition();
         this.colorMap = this.generateColorMap();
-        this.castlingOperator = new CastlingOperator(this.fields);
+        this.castlingOperator = new CastlingOperator(this.fields, this);
     }
 }

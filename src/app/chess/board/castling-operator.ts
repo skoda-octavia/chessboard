@@ -4,10 +4,12 @@ import { BlackRook } from "../pieces/piece/infiniteRangePiece/rook/blackRook/bla
 import { WhiteRook } from "../pieces/piece/infiniteRangePiece/rook/whiteRook/white-rook";
 import { BlackKing } from "../pieces/piece/king/blackKing/black-king";
 import { WhiteKing } from "../pieces/piece/king/whiteKing/white-king";
+import { Board } from "./board";
 
 export class CastlingOperator {
 
     fields: Field[][];
+    board: Board;
 
 
     possibleWhiteCastlings() : number[][] {
@@ -32,7 +34,8 @@ export class CastlingOperator {
         ) { return false;}
 
         if ( this.piecesAlreadyMoved([[0, 0], [0, 4]])) { return false;}
-        if ( this.fieldsOccupied([[0, 1], [0, 2], [0, 3]])) { return false; }
+        if (this.fieldsOccupied([[0, 1], [0, 2], [0, 3]])) { return false; }
+        if (this.fieldsAttacked([[0, 4], [0, 3], [0, 2]], PieceColor.White)) {return false}
 
         return true;
     }
@@ -45,7 +48,8 @@ export class CastlingOperator {
         ) { return false;}
 
         if ( this.piecesAlreadyMoved([[0, 7], [0, 4]])) { return false;}
-        if ( this.fieldsOccupied([[0, 5], [0, 6]])) { return false; }
+        if (this.fieldsOccupied([[0, 5], [0, 6]])) { return false; }
+        if (this.fieldsAttacked([[0, 4], [0, 5], [0, 6]], PieceColor.White)) { return false; }
 
         return true;
     }
@@ -58,7 +62,8 @@ export class CastlingOperator {
 
         if ( this.piecesAlreadyMoved([[7, 7], [7, 4]])) { return false;}
         if ( this.fieldsOccupied([[7, 5], [7, 6]])) { return false; }
-
+        if (this.fieldsAttacked([[7, 4], [7, 5], [7, 6]], PieceColor.Black)) { return false; }
+        
         return true;
     }
 
@@ -76,8 +81,18 @@ export class CastlingOperator {
         return true;
     }
 
-    fieldsAttacked(fields: number[][], byColor : PieceColor) : boolean {
-        for
+
+    fieldsAttacked(fieldsToCheck: number[][], byColor: PieceColor): boolean {
+
+        var fieldsControlled = this.board.fieldsControlled(byColor);
+        console.log("fields controlled", fieldsControlled)
+        for (const fieldToCheck of fieldsToCheck) {
+            var field = this.board.fields[fieldToCheck[0]][fieldToCheck[1]]
+            if (fieldsControlled.has(field)) {
+                return true;
+            }
+        }
+        return false
     }
 
     piecesAlreadyMoved(fields: number[][], ) : boolean {
@@ -110,7 +125,8 @@ export class CastlingOperator {
         return false;
     }
 
-    constructor(fields: Field[][]) {
+    constructor(fields: Field[][], board: Board) {
         this.fields = fields;
+        this.board = board;
     }
 }

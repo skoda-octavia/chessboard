@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Student } from './Student';
-import { StudentService } from './student.service';
+
 
 @Component({
   selector: 'app-root',
@@ -12,21 +12,21 @@ export class AppComponent implements OnInit{
   title = 'studentManager';
   students: Student[] = [];
 
-  constructor(private studentService: StudentService) {  }
+  constructor() {  }
 
-  public getStudents(): void {
-    this.studentService.getStudents().subscribe(
-      (response: Student[]) => {
-        this.students = response;
-      },
-      (error: HttpErrorResponse) => {
-        alert(error.message);
-      }
-    )
-  }
+  // public getStudents(): void {
+  //   this.studentService.getStudents().subscribe(
+  //     (response: Student[]) => {
+  //       this.students = response;
+  //     },
+  //     (error: HttpErrorResponse) => {
+  //       alert(error.message);
+  //     }
+  //   )
+  // }
 
   ngOnInit(): void {
-    this.getStudents();
+    // this.getStudents();
   }
 
 }
