@@ -22,7 +22,7 @@ export abstract class Knight extends Piece {
             var y = moves[i][0] + this.fieldHeight;
             var x = moves[i][1] + this.fieldWidth;
             if (this.correctField(boardHeight, boardWidth, y, x)) {
-                if (this.color != colorBoard[y][x] && !this.moveUnveiling([y, x])) {
+                if (this.color != colorBoard[y][x]) {
                     possibleMoves.push([y, x])
                 }
             }

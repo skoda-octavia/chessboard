@@ -31,24 +31,6 @@ export abstract class Piece {
         this.fieldWidth = width;
     }
 
-    moveUnveiling(move: number[]): boolean {
-        var checkedField = this.board.fields[move[0]][move[1]] 
-        var oldPiece = checkedField.piece
-
-        checkedField.piece = this
-        this.board.fields[this.fieldHeight][this.fieldWidth].piece = null
-
-        var answer = false
-
-        if (this.color == PieceColor.White && this.board.whiteUnderCheck()) { answer = true }
-        else if (this.color == PieceColor.Black && this.board.blackUnderCheck()) { answer = true }
-        
-        checkedField.piece = oldPiece
-        this.board.fields[this.fieldHeight][this.fieldWidth].piece = this
-        
-        return answer;
-    }
-
     abstract possibleMoves(colorBoard: PieceColor[][]): number[][];
 
     constructor(fieldHeight: number, fieldWidth: number, board: Board) {
