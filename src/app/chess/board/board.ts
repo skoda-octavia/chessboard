@@ -2,9 +2,9 @@ import { Field } from "../field/field";
 import { Piece, PieceColor } from "../pieces/piece";
 import { BlackKing } from "../pieces/piece/king/blackKing/black-king";
 import { WhiteKing } from "../pieces/piece/king/whiteKing/white-king";
+import { Pawn } from "../pieces/piece/pawn/pawn";
 import { BoardGenerator } from "./board-generator";
 import { CastlingOperator } from "./castling-operator";
-
 
 
 export class Board {
@@ -15,11 +15,8 @@ export class Board {
     height: number = 0;
     anyButtonClicked: boolean = false;
     markedField: any = null;
-    colorMap: any = null;
-    whiteInCheck: boolean = true;
-    blackInCheck: boolean = true;
     movingColor: PieceColor = PieceColor.White;
-
+    pawns: Pawn[] = []
 
     changeMovingColor(): void {
         if (this.movingColor == PieceColor.White) { this.movingColor = PieceColor.Black }
@@ -40,23 +37,29 @@ export class Board {
         }
     }
 
+    // possibleEnPassant(): boolean {
+    //     var 
+
+    // }
+
     markPossibleMoves(possibleMoves: number[][], pieceColor : PieceColor) {
         for (let i = 0; i < possibleMoves.length; i++) {
-
             var y = possibleMoves[i][0];
             var x = possibleMoves[i][1];
             var field = this.fields[y][x];
 
-            if (this.moveUnveiling(field)) {continue}
+            if (this.moveUnveiling(field)) { continue }
+            
+            // if (this.markedField.piece && this.possibleEnPassant()) {
+
+            // }
 
             if (field.piece == null) { field.markedPossibleMove = true;}
             else if  (field.piece.color != pieceColor) { field.markedToCapture = true;}
-            else { }
         }
     }
 
     firstButtonClicked(height: number, width: number) : void {
-        //mark
         if (this.fields[height][width].piece && this.fields[height][width].piece.color == this.movingColor) {
             this.markedField = this.fields[height][width];
             var possibleMoves = this.markedField.piece.possibleMoves(this.generateColorMap());
@@ -68,7 +71,6 @@ export class Board {
     }
 
     secondButtonClicked(height: number, width: number) : void {
-        //console.log('sec but field: ', this.fields[height][width]);
         if (!this.fields[height][width].marked()) { }
         if (this.fields[height][width].markedPossibleMove) {
             this.move(height, width)
@@ -95,8 +97,6 @@ export class Board {
         field.piece = oldPiece
 
         return answer;
-
-
     }
 
     fieldsControlled(byColor: PieceColor): Set<Field> {
@@ -131,7 +131,6 @@ export class Board {
 
     possibleCastlingMoves(color: PieceColor) : number[][] {
         this.generateColorMap();
-        
         switch (color) {
             case PieceColor.White:
                 return this.castlingOperator.possibleWhiteCastlings();
@@ -145,30 +144,25 @@ export class Board {
     }
 
     move(height: number, width: number) {
-        this.colorMap
-        [this.markedField.piece.fieldHeight]
-        [this.markedField.piece.fieldWidth] =
-            PieceColor.None;
-        this.colorMap[height][width] = this.markedField.piece.color;
-
         this.markedField.piece.moveTo(height, width);
 
         this.fields[height][width].piece = this.markedField.piece;
         this.markedField.piece = null;
 
+        this.changeEnPassant()
         this.changeMovingColor()
-        this.markCheck()
+    }
 
-        console.log("board", this)
-
+    changeEnPassant() {
+        for (let i = 0; i < this.pawns.length; i++) {
+            var pawn = this.pawns[i]
+            if(pawn.color == this.movingColor) {pawn.anyPieceMoved()}
+        }
     }
 
     capture(height: number, width: number) {
         this.fields[height][width].piece = null;
         this.move(height, width);
-
-        this.markCheck()
-
     }
 
 
@@ -177,6 +171,7 @@ export class Board {
         else {return this.blackUnderCheck()}
     }
 
+
     whiteUnderCheck(): boolean {
         var fieldsControlledByBlack = this.fieldsControlled(PieceColor.Black)
         var whiteKingField = this.kingsField(PieceColor.White)
@@ -184,22 +179,14 @@ export class Board {
         else { return false }
     }
 
+
     blackUnderCheck(): boolean {
         var fieldsControlledByWhite = this.fieldsControlled(PieceColor.White)
         var blackKingField = this.kingsField(PieceColor.Black)
         if (fieldsControlledByWhite.has(blackKingField)) { return true }
         else { return false }
-        
     }
 
-    markCheck() {
-        if (this.blackUnderCheck()) { this.blackInCheck = true }
-        else { this.blackInCheck = false }
-        
-
-        if (this.whiteUnderCheck()) { this.whiteInCheck = true }
-        else { this.whiteInCheck = false }
-    }
 
     checkFieldArgs(height: number, width: number) : void {
         if (!Number.isInteger(height) || height < 0 || height >= this.height) {
@@ -222,28 +209,23 @@ export class Board {
     }
 
 
-
     generateColorMap() {
         var colorMap = [];
         for (let i = 0; i < this.height; i++) {
             var row = [];
             for (let j = 0; j < this.width; j++) {
-                if (this.fields[i][j].piece) {
-                    row.push(this.fields[i][j].piece.color);
-                }
-                else {
-                    row.push(PieceColor.None);
-                }
+                if (this.fields[i][j].piece) {row.push(this.fields[i][j].piece.color);}
+                else {row.push(PieceColor.None);}
             }
             colorMap.push(row);
         }
         return colorMap;
     }
 
+
     constructor() {
         this.boardGenerator = new BoardGenerator(this);
         this.boardGenerator.setBoard()
-        this.colorMap = this.generateColorMap();
         this.castlingOperator = new CastlingOperator(this.fields, this);
     }
 }
