@@ -7,8 +7,6 @@ export enum PieceColor {
     None = "none"
 }
 
-
-
 export abstract class Piece {
     abstract iconPath: string;
     fieldHeight: number;

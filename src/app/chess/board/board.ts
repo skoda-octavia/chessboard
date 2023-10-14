@@ -37,10 +37,21 @@ export class Board {
         }
     }
 
-    // possibleEnPassant(): boolean {
-    //     var 
+    possibleEnPassant(field: Field): boolean {
+        if (!(this.markedField.piece instanceof Pawn)) {return false}
 
-    // }
+        if (this.markedField.height != 3 && this.markedField.height != 4) {return false}
+        if (field.height != 2 && field.height != 5) {return false}
+        if (Math.abs(this.markedField.height - field.height) != 1 || Math.abs(this.markedField.width - field.width) != 1) {return false}
+
+        var neighboringPawnWidth = field.width
+        var neighboringPawnHeight = this.markedField.height
+        var neighboringField = this.fields[neighboringPawnHeight][neighboringPawnWidth]
+        if (!(neighboringField.piece instanceof Pawn) || neighboringField.piece.color == this.movingColor) {return false}
+
+
+        return true
+    }
 
     markPossibleMoves(possibleMoves: number[][], pieceColor : PieceColor) {
         for (let i = 0; i < possibleMoves.length; i++) {
@@ -49,10 +60,11 @@ export class Board {
             var field = this.fields[y][x];
 
             if (this.moveUnveiling(field)) { continue }
-            
-            // if (this.markedField.piece && this.possibleEnPassant()) {
 
-            // }
+            if (field.piece == null && this.possibleEnPassant(field)) {
+                field.markedToCapture = true
+                continue
+            }
 
             if (field.piece == null) { field.markedPossibleMove = true;}
             else if  (field.piece.color != pieceColor) { field.markedToCapture = true;}
@@ -102,12 +114,13 @@ export class Board {
     fieldsControlled(byColor: PieceColor): Set<Field> {
         var controlledFields = new Set<Field>()
         var tempPiece;
+        var colorMap = this.generateColorMap();
         for (let i = 0; i < this.fields.length; i++) {
             for (let j = 0; j < this.fields[0].length; j++) {
                 if (this.fields[i][j].piece) {
                     tempPiece = this.fields[i][j].piece;
                     if (tempPiece.color == byColor) {
-                        var possibleMoves = tempPiece.possibleMoves(this.generateColorMap());
+                        var possibleMoves = tempPiece.possibleMoves(colorMap);
                         for (const field of possibleMoves) {
                             var fieldHeight = field[0]
                             var fieldWidth = field[1]
@@ -149,26 +162,36 @@ export class Board {
         this.fields[height][width].piece = this.markedField.piece;
         this.markedField.piece = null;
 
-        this.changeEnPassant()
+        this.unmarkEnPassant()
         this.changeMovingColor()
     }
 
-    changeEnPassant() {
-        for (let i = 0; i < this.pawns.length; i++) {
-            var pawn = this.pawns[i]
-            if(pawn.color == this.movingColor) {pawn.anyPieceMoved()}
-        }
-    }
-
     capture(height: number, width: number) {
-        this.fields[height][width].piece = null;
+        //only for EnPassant
+        if (this.fields[height][width].piece == null) {
+            this.captureEnPassant(height, width)
+        }
+        else {this.fields[height][width].piece = null;}
         this.move(height, width);
     }
 
+    captureEnPassant(height: number, width: number) {
+        var pawnHeight = this.markedField.height
+        var pawnWidth = width
+        this.fields[pawnHeight][pawnWidth].piece = null
+
+    }
 
     check(pieceColor: PieceColor): boolean {
         if (pieceColor == PieceColor.White) { return this.whiteUnderCheck() }
         else {return this.blackUnderCheck()}
+    }
+
+    unmarkEnPassant() {
+        for (let i = 0; i < this.pawns.length; i++) {
+            var pawn = this.pawns[i]
+            if(pawn.color == this.movingColor) {pawn.anyPieceMoved()}
+        }
     }
 
 

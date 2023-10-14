@@ -1,5 +1,4 @@
 import { Board } from "src/app/chess/board/board";
-import { Field } from "src/app/chess/field/field";
 import { CastlingPiece } from "../../castlingPiece";
 import { Piece, PieceColor } from "../../piece";
 
@@ -16,11 +15,12 @@ export abstract class King extends Piece implements CastlingPiece {
             [-1, 1],
             [-1, -1]
     ];
-    
+
     moveRook(fromY: number, fromX: number, toY: number, toX: number) {
         var tempPiece = this.board.fields[fromY][fromX].piece
         this.board.fields[fromY][fromX].piece = null
         this.board.fields[toY][toX].piece = tempPiece
+        tempPiece.moveTo(toY, toX)
     }
 
     possibleMoves(colorBoard: PieceColor[][]): number[][] {
@@ -37,7 +37,7 @@ export abstract class King extends Piece implements CastlingPiece {
                 }
             }
         }
-        
+
         if (this.board.markedField == this.board.fields[this.fieldHeight][this.fieldWidth]) {
             var possibleCastlingMoves = this.board.possibleCastlingMoves(this.color)
             return [...possibleMoves, ...possibleCastlingMoves];
