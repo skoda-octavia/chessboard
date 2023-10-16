@@ -5,18 +5,20 @@ import { WhiteKing } from "../pieces/piece/king/whiteKing/white-king";
 import { Pawn } from "../pieces/piece/pawn/pawn";
 import { BoardGenerator } from "./board-generator";
 import { CastlingOperator } from "./castling-operator";
+import { pawnTransformationBoard } from "./pawnTransBoard/PawnTransformationBoard";
 
 
 export class Board {
     boardGenerator: BoardGenerator;
     castlingOperator: CastlingOperator;
     fields: Field[][] = [];
-    width: number = 0;
-    height: number = 0;
+    width: number;
+    height: number;
     anyButtonClicked: boolean = false;
     markedField: any = null;
     movingColor: PieceColor = PieceColor.White;
     pawns: Pawn[] = []
+    pawnTransBoard: any;
 
     changeMovingColor(): void {
         if (this.movingColor == PieceColor.White) { this.movingColor = PieceColor.Black }
@@ -246,9 +248,11 @@ export class Board {
     }
 
 
-    constructor() {
-        this.boardGenerator = new BoardGenerator(this);
-        this.boardGenerator.setBoard()
+    constructor(height: number, width: number, ) {
+        this.boardGenerator = new BoardGenerator();
+        this.height = height
+        this.width = width
+        this.boardGenerator.setDefaultBoard(this)
         this.castlingOperator = new CastlingOperator(this.fields, this);
     }
 }

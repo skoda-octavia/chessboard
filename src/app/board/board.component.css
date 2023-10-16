@@ -10,3 +10,12 @@
 .row {
   display: flex;
 }
+
+.board-container {
+  margin-top: 20px; /* Dodaje odstęp między divami */
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+}

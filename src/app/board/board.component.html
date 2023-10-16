@@ -1,5 +1,12 @@
 <main>
-    <div class="row" *ngFor="let row of board.fields">
-        <app-square *ngFor="let field of row" [field]="field"></app-square>
+    <div class="board-container">
+        <div class="row" *ngFor="let row of board.fields">
+            <app-square *ngFor="let field of row" [field]="field"></app-square>
+        </div>
+    </div>
+    <div class="board-container center">
+        <div class="row" *ngFor="let row of pawnTransformationBoard.fields">
+            <app-square *ngFor="let field of row" [field]="field"></app-square>
+        </div>
     </div>
 </main>
