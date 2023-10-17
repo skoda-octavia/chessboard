@@ -26,7 +26,6 @@ export class Field {
     }
 
     fieldMarked() {
-        console.log('Button clicked from field! Value:', this.color, this.height, this.width);
         this.board.buttonClicked(this.height, this.width);
     }
 

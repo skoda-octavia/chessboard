@@ -39,7 +39,7 @@ export class BoardGenerator {
             if (color == PieceColor.Black) { var pawn = new BlackPawn(row, i, board) }
             else { var pawn = new WhitePawn(row, i, board) }
             board.fields[row][i].setPiece(pawn);
-            board.pawns.push(pawn)
+            board.pawns.add(pawn)
         }
     }
 

@@ -63,11 +63,6 @@ export abstract class Pawn extends Piece {
 
     override moveTo(height: number, width: number): void {
         if (this.fieldHeight == this.startingRow && Math.abs(height - this.fieldHeight) == 2) {
-            // if (leftField.piece != null) {
-            //     if (leftField.piece instanceof Pawn && leftField.piece.color != this.color) {
-            //         leftField.piece.rightEnPassant = true
-            //     }
-            // }
             if (this.fieldWidth != 0) {
                 var leftField = this.board.fields[height][width - 1]
                 this.markEnPassant(leftField, true)

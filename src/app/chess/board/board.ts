@@ -1,3 +1,4 @@
+import { BoardComponent } from "src/app/board/board.component";
 import { Field } from "../field/field";
 import { Piece, PieceColor } from "../pieces/piece";
 import { BlackKing } from "../pieces/piece/king/blackKing/black-king";
@@ -17,8 +18,8 @@ export class Board {
     anyButtonClicked: boolean = false;
     markedField: any = null;
     movingColor: PieceColor = PieceColor.White;
-    pawns: Pawn[] = []
-    pawnTransBoard: any;
+    pawns: Set<Pawn> = new Set()
+    boardComponent: BoardComponent;
 
     changeMovingColor(): void {
         if (this.movingColor == PieceColor.White) { this.movingColor = PieceColor.Black }
@@ -158,21 +159,41 @@ export class Board {
         return [[]];
     }
 
+    pawnToTransformation() {
+        for (const pawn of this.pawns) {if (pawn.fieldHeight == 7 || pawn.fieldHeight == 0) {return pawn}}
+        return null
+    }
+
+    pawnTransformed(pawn: Pawn, piece: Piece) {
+        this.pawns.delete(pawn)
+        this.fields[piece.fieldHeight][piece.fieldWidth].piece = piece
+        this.movingColor = piece.color
+        this.changeMovingColor()
+    }
+
     move(height: number, width: number) {
         this.markedField.piece.moveTo(height, width);
 
         this.fields[height][width].piece = this.markedField.piece;
         this.markedField.piece = null;
 
+        var pawnToTransform = this.pawnToTransformation() 
         this.unmarkEnPassant()
-        this.changeMovingColor()
+
+        if (pawnToTransform) { 
+            this.movingColor = PieceColor.None
+            this.boardComponent.pawnTransformationBoard.transformation(pawnToTransform)
+        }
+        
+        else { this.changeMovingColor() }
+        
     }
 
     capture(height: number, width: number) {
+        if (this.fields[height][width].piece instanceof Pawn) {this.pawns.delete(this.fields[height][width].piece)}
         //only for EnPassant
-        if (this.fields[height][width].piece == null) {
-            this.captureEnPassant(height, width)
-        }
+        if (this.fields[height][width].piece == null) { this.captureEnPassant(height, width) }
+
         else {this.fields[height][width].piece = null;}
         this.move(height, width);
     }
@@ -180,6 +201,7 @@ export class Board {
     captureEnPassant(height: number, width: number) {
         var pawnHeight = this.markedField.height
         var pawnWidth = width
+        this.pawns.delete(this.fields[pawnHeight][pawnWidth].piece)
         this.fields[pawnHeight][pawnWidth].piece = null
 
     }
@@ -190,12 +212,12 @@ export class Board {
     }
 
     unmarkEnPassant() {
-        for (let i = 0; i < this.pawns.length; i++) {
-            var pawn = this.pawns[i]
-            if(pawn.color == this.movingColor) {pawn.anyPieceMoved()}
-        }
+        this.pawns.forEach(pawn => {
+            if (pawn.color === this.movingColor) {
+                pawn.anyPieceMoved();
+            }
+        });
     }
-
 
     whiteUnderCheck(): boolean {
         var fieldsControlledByBlack = this.fieldsControlled(PieceColor.Black)
@@ -248,11 +270,12 @@ export class Board {
     }
 
 
-    constructor(height: number, width: number, ) {
+    constructor(height: number, width: number, boardComponent: BoardComponent) {
         this.boardGenerator = new BoardGenerator();
         this.height = height
         this.width = width
         this.boardGenerator.setDefaultBoard(this)
         this.castlingOperator = new CastlingOperator(this.fields, this);
+        this.boardComponent = boardComponent
     }
 }

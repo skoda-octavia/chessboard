@@ -11,12 +11,11 @@ import { pawnTransformationBoard } from '../chess/board/pawnTransBoard/PawnTrans
 export class BoardComponent {
   board: Board;
   pawnTransformationBoard: pawnTransformationBoard;
-  transformationVisible = true;
+  transformationVisible = false;
 
   constructor() {
-    this.board = new Board(8, 8);
-    this.pawnTransformationBoard = new pawnTransformationBoard(4, 1, this.board)
-    this.board.pawnTransBoard = this.pawnTransformationBoard
+    this.board = new Board(8, 8, this);
+    this.pawnTransformationBoard = new pawnTransformationBoard(4, 1, this)
   }
 }
 
